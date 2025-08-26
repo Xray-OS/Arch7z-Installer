@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>src/resources/icons/xray-installer.png</file>
+    </qresource>
+</RCC>
