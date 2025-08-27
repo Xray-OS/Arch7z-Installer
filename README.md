@@ -73,25 +73,21 @@ On the final screen, set up your system user and defaults:
    - mkdir build && cd build
 
    - Run CMake to configure the project Assuming your Qt installation is properly set up and your environment knows where to find it:
-    CMAKE:
-    <pre>
-    	cmake .. -DCMAKE_PREFIX_PATH=$(qmake -query QT_INSTALL_PREFIX)/lib/cmake
-    </pre>
+   - CMAKE:
+    	"cmake .. -DCMAKE_PREFIX_PATH=$(qmake -query QT_INSTALL_PREFIX)/lib/cmake"
+
 
    - If you’re using Qt6, you might need: 
-    <pre>
-    	cmake .. -DCMAKE_PREFIX_PATH=$(qtpaths --qt-version 6 --install-prefix)/lib/cmake
-    </pre>
+    	"cmake .. -DCMAKE_PREFIX_PATH=$(qtpaths --qt-version 6 --install-prefix)/lib/cmake"
    
     - Build the project
-   <pre>
-	    cmake --build .
-   </pre>
+	    "cmake --build"
+   		"make"
 
      - Run the project
-       sudo ./arch7z-installer
+       "sudo ./arch7z-installer"
    
 
-Arch7Z installer is still in alpha, there is a lot of stuff to fix, so is functional you can also install Xray_OS through Arch7z Installer, but be aware that the software is still in alpha and there is still a lot of stuff to fix and cover.
+**Arch7Z installer is still in alpha** there is a lot of stuff to fix, so is functional you can also install Xray_OS through Arch7z Installer, but be aware that the software is still in alpha and there is still a lot of stuff to fix and cover.
 
  
