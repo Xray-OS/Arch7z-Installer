@@ -91,4 +91,4 @@ On the final screen, set up your system user and defaults:
 
 **Arch7Z installer is still in alpha** there is a lot of stuff to fix, so is functional you can also install Xray_OS through Arch7z Installer, but be aware that the software is still in alpha and there is still a lot of stuff to fix and cover.
 
- 
+🌐 Contact For any questions or contributions, feel free to open an issue or pull request on the GitHub repository. 
