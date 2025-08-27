@@ -47,7 +47,9 @@ Arch7z Installer replaces Calamares for Xray_OS with a lightweight, Qt-based ins
    - root `/` (required)  
    - swap (optional)  
 4. Select filesystem types.  
-5. Continue with installation.  
+5. Continue with installation.
+
+when it comes to VMs at least in Virtual Box, (theres problems with Virt Manager), Arch7Z installer changes the partition Layout for a single partition to install the whole system, without the swap option. You have the options between EXT4 and BTRFS as a file system for all modes, Clean and Custom install options on real Hardware and also for VMs.
 
 ---
 
