@@ -1,8 +1,7 @@
 # Arch7z Installer (Xray_OS)
 
-## 🚧 Note
-
-Arch7z Installer is in **alpha**. Expect bugs, missing features, and rough edges. Proceed with caution.
+## 🚧 Note:
+Arch7z Installer is in **beta**. Expect bugs and maybe some limitations. Proceed with caution.
 
 ---
 
@@ -69,26 +68,20 @@ On the final screen, set up your system user and defaults:
 1. Install dependencies: Qt 5/6, CMake, GCC or Clang.  
 2. Clone the repository:
    ```bash
-   git clone https://github.com/Xray-OS/arch7z-installer.git
-
-   "cd arch7z-installer"
-
-   "mkdir build && cd build"
-
-   - Run CMake to configure the project Assuming your Qt installation is properly set up and your environment knows where to find it:
-   "cmake .. -DCMAKE_PREFIX_PATH=$(qmake -query QT_INSTALL_PREFIX)/lib/cmake"
-
-   - If you’re using Qt6, you might need: 
-   "cmake .. -DCMAKE_PREFIX_PATH=$(qtpaths --qt-version 6 --install-prefix)/lib/cmake"
+	* Clone the project
+   		- "git clone https://github.com/Xray-OS/arch7z-installer.git"
+	
+	* Build the project
+   		- "cd arch7z-installer"
+   		- "mkdir build && cd build"
    
-    - Build the project
-	"cmake --build"
-    "make"
+		- "cmake --"
+    	- "make"
 
-     - Run the project
-     "sudo ./arch7z-installer"
+     * Running the project
+     	- "./arch7z-installer" or ("sudo ./arch7z-installer")
    
 
-**Arch7Z installer is still in alpha** there is a lot of stuff to fix, so is functional you can also install Xray_OS through Arch7z Installer, but be aware that the software is still in alpha and there is still a lot of stuff to fix and cover.
+**Arch7Z installer is still in beta** there is a lot of stuff to fix.
 
-🌐 Contact For any questions or contributions, feel free to open an issue or pull request on the GitHub repository. 
+🌐 Contact For any questions or contributions, feel free to open an issue or pull request on the GitHub repository.
