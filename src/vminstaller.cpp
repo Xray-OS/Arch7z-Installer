@@ -23,13 +23,48 @@ void VMInstaller::partitionDisk() {
         return;
     }
     
-    QStringList commands;
-    commands << QString("dd if=/dev/zero of=%1 bs=1M count=1").arg(config.selectedDisk);
-    commands << QString("echo ',,L,*' | sfdisk %1").arg(config.selectedDisk);
-    commands << "sync && sleep 2";
-    commands << QString("test -b %1").arg(getRootPartition());
+    QString partitionScript = QString(R"(
+#!/bin/bash
+set -e
+
+# Validate disk exists
+test -b %1 || (echo 'Selected disk does not exist: %1' && exit 1)
+
+# Unmount any existing partitions
+umount %1* 2>/dev/null || true
+
+# Wipe existing partition table
+dd if=/dev/zero of=%1 bs=1M count=1 2>/dev/null || true
+sync
+sleep 1
+
+# Create MBR partition table with single bootable Linux partition
+echo ',,L,*' | sfdisk %1
+sync
+sleep 2
+
+# Force kernel to re-read partition table
+partprobe %1
+sync
+sleep 3
+
+# Wait for udev to create device nodes
+udevadm settle
+sleep 2
+
+# Validate partition was created
+ROOT_PART="%2"
+echo "Checking for root partition: $ROOT_PART"
+test -b "$ROOT_PART" || (echo "Failed to create VM root partition: $ROOT_PART" && exit 1)
+
+# Show final partition status
+echo "Final VM partition layout:"
+lsblk %1
+)")
+    .arg(config.selectedDisk)
+    .arg(getRootPartition());
     
-    executeCommand("bash", QStringList() << "-c" << commands.join(" && "));
+    executeCommand("bash", QStringList() << "-c" << partitionScript);
 }
 
 void VMInstaller::formatPartitions() {
@@ -99,7 +134,7 @@ void VMInstaller::mountPartitions() {
 }
 
 void VMInstaller::installBootloader() {
-    qDebug() << "[DEBUG] VM installBootloader() - BIOS/Legacy GRUB";
+    qDebug() << "[DEBUG] VM installBootloader() - BIOS/Legacy GRUB configuration";
     
     QStringList bootloaderCommands;
     bootloaderCommands << "test -f /mnt/etc/fstab || (echo 'System not properly installed' && exit 1)";
@@ -109,11 +144,7 @@ void VMInstaller::installBootloader() {
     bootloaderCommands << "arch-chroot /mnt sed -i 's/#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' /etc/default/grub";
     bootloaderCommands << "arch-chroot /mnt sed -i 's/GRUB_TIMEOUT=.*/GRUB_TIMEOUT=5/' /etc/default/grub";
     
-    // Install GRUB to MBR (BIOS mode)
-    bootloaderCommands << QString("arch-chroot /mnt grub-install --target=i386-pc %1").arg(config.selectedDisk);
-    
-    // Generate GRUB configuration
-    bootloaderCommands << "arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg";
+    // Note: GRUB installation and config generation moved to final-settings.conf
     
     QString bootloaderScript = bootloaderCommands.join(" && ");
     executeCommand("bash", QStringList() << "-c" << bootloaderScript);
@@ -122,24 +153,54 @@ void VMInstaller::installBootloader() {
 void VMInstaller::installBaseSystem() {
     qDebug() << "[DEBUG] VM installBaseSystem() - Starting base system installation";
     
-    QString squashfsPath = "/run/archiso/bootmnt/arch/x86_64/airootfs.sfs";
-    qDebug() << "[DEBUG] VM installBaseSystem() - Looking for SquashFS at" << squashfsPath;
+    QString installScript = R"(
+#!/bin/bash
+set -e
+
+# Validate mount point
+test -d /mnt || (echo '/mnt directory does not exist' && exit 1)
+mountpoint -q /mnt || (echo '/mnt is not mounted' && exit 1)
+
+# Try copytoram first, then bootmnt as fallback
+if [ -f /run/archiso/copytoram/airootfs.sfs ]; then
+    SQUASHFS_PATH='/run/archiso/copytoram/airootfs.sfs'
+    echo 'VM: Using copytoram SquashFS'
+elif [ -f /run/archiso/bootmnt/arch/x86_64/airootfs.sfs ]; then
+    SQUASHFS_PATH='/run/archiso/bootmnt/arch/x86_64/airootfs.sfs'
+    echo 'VM: Using bootmnt SquashFS'
+else
+    echo 'ERROR: No SquashFS found'
+    exit 1
+fi
+
+# Install system from SquashFS
+echo "Found SquashFS at: $SQUASHFS_PATH"
+mkdir -p /tmp/squashfs-root
+mount -t squashfs -o loop "$SQUASHFS_PATH" /tmp/squashfs-root
+rsync -aHAXS --numeric-ids --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/tmp/* --exclude=/run/* --exclude=/mnt/* --exclude=/media/* --exclude=/lost+found /tmp/squashfs-root/ /mnt/
+
+# Copy kernel - prioritize SquashFS source over live environment
+mkdir -p /mnt/boot
+if [ -f /mnt/usr/lib/modules/$(uname -r)/vmlinuz ]; then
+    cp /mnt/usr/lib/modules/$(uname -r)/vmlinuz /mnt/boot/vmlinuz-linux
+elif [ -f /usr/lib/modules/$(uname -r)/vmlinuz ]; then
+    cp /usr/lib/modules/$(uname -r)/vmlinuz /mnt/boot/vmlinuz-linux
+elif [ -f /boot/vmlinuz-linux ]; then
+    cp /boot/vmlinuz-linux /mnt/boot/vmlinuz-linux
+else
+    echo 'Kernel not found, skipping'
+fi
+
+# Cleanup
+umount /tmp/squashfs-root
+rmdir /tmp/squashfs-root
+
+# Verify installation
+test -d /mnt/etc || (echo 'System installation failed - /mnt/etc missing' && exit 1)
+test -d /mnt/usr || (echo 'System installation failed - /mnt/usr missing' && exit 1)
+)";
     
-    QStringList installCommands;
-    installCommands << "test -d /mnt";
-    installCommands << "mountpoint -q /mnt";
-    installCommands << QString("test -f %1").arg(squashfsPath);
-    installCommands << "mkdir -p /tmp/squashfs-root";
-    installCommands << QString("mount -t squashfs -o loop %1 /tmp/squashfs-root").arg(squashfsPath);
-    installCommands << "rsync -aHAXS --numeric-ids --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/tmp/* --exclude=/run/* --exclude=/mnt/* --exclude=/media/* --exclude=/lost+found /tmp/squashfs-root/ /mnt/";
-    installCommands << "mkdir -p /mnt/boot";
-    installCommands << "test -f /run/archiso/bootmnt/arch/boot/x86_64/vmlinuz-linux && cp /run/archiso/bootmnt/arch/boot/x86_64/vmlinuz-linux /mnt/boot/vmlinuz-linux || echo 'Kernel not found, skipping'";
-    installCommands << "umount /tmp/squashfs-root";
-    installCommands << "rmdir /tmp/squashfs-root";
-    installCommands << "test -d /mnt/etc";
-    installCommands << "test -d /mnt/usr";
-    
-    executeCommand("bash", QStringList() << "-c" << installCommands.join(" && "));
+    executeCommand("bash", QStringList() << "-c" << installScript);
 }
 
 QString VMInstaller::getRootPartition() const {

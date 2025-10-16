@@ -3,6 +3,7 @@
 #include <QProcess>
 #include <QTimer>
 #include "installconfig.h"
+#include "settingsparser.h"
 
 class Installer : public QObject {
     Q_OBJECT
@@ -27,6 +28,7 @@ protected:
     virtual void configureSystem();
     virtual void installBootloader();
     virtual void runCustomScripts();
+
     virtual void cleanup();
 
 private:

@@ -56,11 +56,11 @@ void VMPartitionLayoutWindow::setupUI() {
     QHBoxLayout *fsLayout = new QHBoxLayout();
     filesystemGroup = new QButtonGroup(this);
     
-    btrfsRadio = new QRadioButton("Btrfs (recommended)", this);
-    btrfsRadio->setChecked(true);
+    btrfsRadio = new QRadioButton("Btrfs", this);
     btrfsRadio->setStyleSheet("font-size: 14px; color: white; margin-right: 20px;");
     
-    ext4Radio = new QRadioButton("Ext4", this);
+    ext4Radio = new QRadioButton("Ext4 (recommended)", this);
+    ext4Radio->setChecked(true);
     ext4Radio->setStyleSheet("font-size: 14px; color: white;");
     
     filesystemGroup->addButton(btrfsRadio);

@@ -49,7 +49,7 @@ struct InstallConfig {
     bool isVirtualMachine;
     QString virtualizationType;
     
-    InstallConfig() : enableSwap(true), samePassword(true), filesystem("btrfs"), partitioningMode(PartitioningMode::Automatic), installationSource(InstallationSource::AutomaticInstall), isVirtualMachine(false) {}
+    InstallConfig() : enableSwap(true), samePassword(true), filesystem("ext4"), partitioningMode(PartitioningMode::Automatic), installationSource(InstallationSource::AutomaticInstall), isVirtualMachine(false) {}
     
     void reset() {
         installationSource = InstallationSource::AutomaticInstall;

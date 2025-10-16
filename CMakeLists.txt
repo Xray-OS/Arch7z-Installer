@@ -22,6 +22,7 @@ set(SOURCES
     src/installer.cpp
     src/vmdetection.cpp
     src/vminstaller.cpp
+    src/settingsparser.cpp
 )
 
 set(HEADERS
@@ -38,6 +39,7 @@ set(HEADERS
     src/installconfig.h
     src/vmdetection.h
     src/vminstaller.h
+    src/settingsparser.h
 )
 
 qt6_add_executable(arch7z-installer ${SOURCES} ${HEADERS})
