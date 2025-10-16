@@ -69,17 +69,17 @@ On the final screen, set up your system user and defaults:
 2. Clone the repository:
    ```bash
 	* Clone the project
-   		- "git clone https://github.com/Xray-OS/arch7z-installer.git"
+		- "git clone https://github.com/Xray-OS/arch7z-installer.git"
 	
 	* Build the project
-   		- "cd arch7z-installer"
-   		- "mkdir build && cd build"
+		- "cd arch7z-installer"
+		- "mkdir build && cd build"
    
 		- "cmake --"
-    	- "make"
+		- "make"
 
      * Running the project
-     	- "./arch7z-installer" or ("sudo ./arch7z-installer")
+		- "./arch7z-installer" or ("sudo ./arch7z-installer")
    
 
 **Arch7Z installer is still in beta** there is a lot of stuff to fix.
